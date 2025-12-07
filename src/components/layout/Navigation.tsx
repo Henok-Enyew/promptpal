@@ -1,13 +1,8 @@
-import { useState } from "react";
 import logoFull from "@/assets/logo-full.png";
 import logo from "@/assets/logo.png";
+import { useState } from "react";
 
-type NavigationProps = {
-  showPostButton?: boolean;
-  onPostClick?: () => void;
-};
-
-export function Navigation({ showPostButton = false, onPostClick }: NavigationProps) {
+export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const openMenuHandler = () => {
