@@ -150,7 +150,7 @@ export function HeroGeometric({
       </div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-6">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center pt-20 md:pt-18">
           <motion.div
             custom={0}
             variants={fadeUpVariants}
