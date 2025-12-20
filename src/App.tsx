@@ -2,9 +2,24 @@ import { HeroGeometric } from "@/components/ui/shadcn-io/shape-landing-hero";
 import { Navigation } from "@/components/layout/Navigation";
 import { Feed } from "@/pages/Feed";
 import { PostDetail } from "@/pages/PostDetail";
+import { Features } from "@/components/landing/Features";
+import { OptimizerDemo } from "@/components/landing/OptimizerDemo";
+import { MarketplacePreview } from "@/components/landing/MarketplacePreview";
+import { BenchmarkingSection } from "@/components/landing/BenchmarkingSection";
+import { PromptPulse } from "@/components/landing/PromptPulse";
+import { PromptBlueprint } from "@/components/landing/PromptBlueprint";
+import { Footer } from "@/components/landing/Footer";
+import { AuthModal } from "@/components/landing/AuthModal";
 import { useEffect, useState } from "react";
 
 function App() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+
+  const openAuth = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
 
   // Simple routing based on URL hash
   const getCurrentPage = () => {
@@ -34,18 +49,51 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#030303] text-white selection:bg-indigo-500/30">
       {/* Navigation - positioned absolutely over the hero */}
       <div className="absolute top-0 left-0 right-0 z-50">
-        <Navigation />
+        <Navigation onOpenAuth={openAuth} />
       </div>
 
-      {/* HeroGeometric Component */}
-      <HeroGeometric
-        badge="GitHub for AI Prompts"
-        title1="Create, Test & Sell"
-        title2="AI Prompts"
-        description="Build prompts with variables, test them against real data, and sell high-performing prompts in our marketplace. The platform where prompt engineers thrive."
+      <main>
+        {/* HeroGeometric Component */}
+        <HeroGeometric
+          badge="GitHub for AI Prompts"
+          title1="Create, Test & Sell"
+          title2="High-Performance AI Prompts"
+          description="PromptPal is the specialized marketplace and refinery for AI engineers. Stop guessing and start engineering prompts that actually deliver results."
+          onOpenAuth={openAuth}
+        />
+
+        <PromptPulse />
+
+        <section id="features">
+          <Features />
+        </section>
+
+        <section id="blueprint">
+          <PromptBlueprint />
+        </section>
+
+        <section id="optimizer">
+          <OptimizerDemo />
+        </section>
+
+        <section id="benchmarking">
+          <BenchmarkingSection />
+        </section>
+
+        <section id="marketplace">
+          <MarketplacePreview />
+        </section>
+      </main>
+
+      <Footer />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authMode}
       />
     </div>
   );

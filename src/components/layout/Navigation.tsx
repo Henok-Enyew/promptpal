@@ -1,9 +1,24 @@
 import logoFull from "@/assets/logo-full.png";
 import logo from "@/assets/logo.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, useScroll } from "framer-motion";
+import { LayoutGrid, Zap, BookOpen, DollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function Navigation() {
+type NavigationProps = {
+  onOpenAuth?: (mode: 'login' | 'signup') => void;
+};
+
+export function Navigation({ onOpenAuth }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+
+  useEffect(() => {
+    return scrollY.on('change', (latest) => {
+      setIsScrolled(latest > 50);
+    });
+  }, [scrollY]);
 
   const openMenuHandler = () => {
     setIsMenuOpen(true);
@@ -13,11 +28,27 @@ export function Navigation() {
     setIsMenuOpen(false);
   };
 
+  const navItems = [
+    { name: 'Feed', href: '#/feed', icon: <LayoutGrid className="w-4 h-4" /> },
+    { name: 'Marketplace', href: '#marketplace', icon: <DollarSign className="w-4 h-4" /> },
+    { name: 'Prompt Studio', href: '#optimizer', icon: <Zap className="w-4 h-4" /> },
+    { name: 'Docs', href: '#', icon: <BookOpen className="w-4 h-4" /> },
+  ];
+
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-[#030303]/80 backdrop-blur-md border-b border-white/10">
-        <div className="container mx-auto px-6 md:px-16 lg:px-24 xl:px-32 py-4 flex items-center justify-between">
-          <a href="#/" className="flex items-center">
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
+          isScrolled 
+            ? "bg-[#030303]/80 backdrop-blur-md border-white/10 py-3" 
+            : "bg-transparent border-transparent py-5"
+        )}
+      >
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          <a href="#/" className="flex items-center group cursor-pointer">
             <img src={logo} alt="PromptPal" className="w-10 md:hidden" />
             <img
               src={logoFull}
@@ -26,48 +57,45 @@ export function Navigation() {
             />
           </a>
 
-          <div className="hidden md:flex items-center gap-8 transition duration-500">
-            <a
-              href="#/feed"
-              className="text-white hover:text-slate-300 transition"
-            >
-              Feed
-            </a>
-            <a
-              href="#marketplace"
-              className="text-white hover:text-slate-300 transition"
-            >
-              Marketplace
-            </a>
-            <a
-              href="#studio"
-              className="text-white hover:text-slate-300 transition"
-            >
-              Prompt Studio
-            </a>
-            <a
-              href="#docs"
-              className="text-white hover:text-slate-300 transition"
-            >
-              Docs
-            </a>
-            <a
-              href="#pricing"
-              className="text-white hover:text-slate-300 transition"
-            >
-              Pricing
-            </a>
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors flex items-center gap-2"
+              >
+                {item.icon}
+                {item.name}
+              </a>
+            ))}
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:block space-x-3">
-              <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 transition text-white rounded-md">
-                Get started
-              </button>
-              <button className="text-white hover:bg-slate-300/20 transition px-6 py-2 border border-slate-400 rounded-md">
-                Login
-              </button>
-            </div>
+            {onOpenAuth ? (
+              <>
+                <button 
+                  onClick={() => onOpenAuth('login')}
+                  className="hidden sm:block text-sm font-medium text-white/60 hover:text-white transition-colors px-4 py-2"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => onOpenAuth('signup')}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+                >
+                  Get Started
+                </button>
+              </>
+            ) : (
+              <div className="hidden md:block space-x-3">
+                <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 transition text-white rounded-md">
+                  Get started
+                </button>
+                <button className="text-white hover:bg-slate-300/20 transition px-6 py-2 border border-slate-400 rounded-md">
+                  Login
+                </button>
+              </div>
+            )}
 
             <button
               onClick={openMenuHandler}
@@ -92,7 +120,7 @@ export function Navigation() {
             </button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Mobile Menu */}
       <div
@@ -100,21 +128,17 @@ export function Navigation() {
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <a href="#/feed" className="text-white" onClick={closeMenuHandler}>
-          Feed
-        </a>
-        <a href="#marketplace" className="text-white" onClick={closeMenuHandler}>
-          Marketplace
-        </a>
-        <a href="#studio" className="text-white" onClick={closeMenuHandler}>
-          Prompt Studio
-        </a>
-        <a href="#docs" className="text-white" onClick={closeMenuHandler}>
-          Docs
-        </a>
-        <a href="#pricing" className="text-white" onClick={closeMenuHandler}>
-          Pricing
-        </a>
+        {navItems.map((item) => (
+          <a 
+            key={item.name}
+            href={item.href} 
+            className="text-white flex items-center gap-2" 
+            onClick={closeMenuHandler}
+          >
+            {item.icon}
+            {item.name}
+          </a>
+        ))}
         <button
           onClick={closeMenuHandler}
           className="active:ring-3 active:ring-white aspect-square size-10 p-1 items-center justify-center bg-slate-100 hover:bg-slate-200 transition text-black rounded-md flex"

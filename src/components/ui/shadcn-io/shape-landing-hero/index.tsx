@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Circle } from "lucide-react";
+import { Circle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ElegantShapeProps = {
@@ -76,6 +76,7 @@ type HeroGeometricProps = {
   title2?: string;
   description?: string;
   className?: string;
+  onOpenAuth?: (mode: "login" | "signup") => void;
 };
 
 export function HeroGeometric({
@@ -84,6 +85,7 @@ export function HeroGeometric({
   title2 = "Crafting Exceptional Websites",
   description = "Crafting exceptional digital experiences through innovative design and cutting-edge technology.",
   className,
+  onOpenAuth,
 }: HeroGeometricProps) {
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -99,7 +101,12 @@ export function HeroGeometric({
   };
 
   return (
-    <div className={cn("relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]", className)}>
+    <div
+      className={cn(
+        "relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]",
+        className
+      )}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
 
       <div className="absolute inset-0 overflow-hidden">
@@ -159,9 +166,7 @@ export function HeroGeometric({
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
           >
             <Circle className="h-2 w-2 fill-rose-500/80" />
-            <span className="text-sm text-white/60 tracking-wide">
-              {badge}
-            </span>
+            <span className="text-sm text-white/60 tracking-wide">{badge}</span>
           </motion.div>
 
           <motion.div
@@ -195,6 +200,33 @@ export function HeroGeometric({
               {description}
             </p>
           </motion.div>
+
+          {onOpenAuth && (
+            <motion.div
+              custom={3}
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <button
+                onClick={() => onOpenAuth("signup")}
+                className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-2xl hover:bg-white/90 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-white/10"
+              >
+                Start Engineering{" "}
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById("marketplace");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="w-full sm:w-auto px-8 py-4 bg-white/[0.05] border border-white/[0.1] text-white font-bold rounded-2xl hover:bg-white/[0.1] transition-all"
+              >
+                View Marketplace
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
 
