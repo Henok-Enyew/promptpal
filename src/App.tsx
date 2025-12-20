@@ -2,12 +2,15 @@ import { HeroGeometric } from "@/components/ui/shadcn-io/shape-landing-hero";
 import { Navigation } from "@/components/layout/Navigation";
 import { Feed } from "@/pages/Feed";
 import { PostDetail } from "@/pages/PostDetail";
+import { PromptStudioPage } from "@/pages/PromptStudio";
 import { Features } from "@/components/landing/Features";
 import { OptimizerDemo } from "@/components/landing/OptimizerDemo";
 import { MarketplacePreview } from "@/components/landing/MarketplacePreview";
 import { BenchmarkingSection } from "@/components/landing/BenchmarkingSection";
 import { PromptPulse } from "@/components/landing/PromptPulse";
 import { PromptBlueprint } from "@/components/landing/PromptBlueprint";
+import { PromptStudio } from "@/components/landing/PromptStudio";
+import { PromptVersionControl } from "@/components/landing/PromptVersionControl";
 import { Footer } from "@/components/landing/Footer";
 import { AuthModal } from "@/components/landing/AuthModal";
 import { useEffect, useState } from "react";
@@ -26,6 +29,7 @@ function App() {
     const hash = window.location.hash;
     if (hash === "#/feed") return "feed";
     if (hash.startsWith("#/post/")) return "post";
+    if (hash === "#/studio" || hash === "#studio") return "studio";
     return "home"; // Default to home page with hero
   };
 
@@ -46,6 +50,10 @@ function App() {
 
   if (page === "post") {
     return <PostDetail />;
+  }
+
+  if (page === "studio") {
+    return <PromptStudioPage />;
   }
 
   return (
@@ -69,6 +77,14 @@ function App() {
 
         <section id="features">
           <Features />
+        </section>
+
+        <section id="studio">
+          <PromptStudio />
+        </section>
+
+        <section id="versions">
+          <PromptVersionControl />
         </section>
 
         <section id="blueprint">

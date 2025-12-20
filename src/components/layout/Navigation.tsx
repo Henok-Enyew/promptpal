@@ -31,7 +31,7 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
   const navItems = [
     { name: 'Feed', href: '#/feed', icon: <LayoutGrid className="w-4 h-4" /> },
     { name: 'Marketplace', href: '#marketplace', icon: <DollarSign className="w-4 h-4" /> },
-    { name: 'Prompt Studio', href: '#optimizer', icon: <Zap className="w-4 h-4" /> },
+    { name: 'Prompt Studio', href: '#/studio', icon: <Zap className="w-4 h-4" /> },
     { name: 'Docs', href: '#', icon: <BookOpen className="w-4 h-4" /> },
   ];
 
