@@ -1,14 +1,13 @@
 import { UploadModal } from "@/components/UploadModal";
 import { Navigation } from "@/components/layout/Navigation";
 import { AuthModal } from "@/components/landing/AuthModal";
+import { PromptDetail } from "@/components/landing/PromptDetail";
 import { PostCard } from "@/components/PostCard";
 import { 
   Search, 
   X,
   ArrowUpDown,
-  Zap,
-  Copy,
-  Check
+  Zap
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -121,11 +120,17 @@ export function Feed() {
   const [selectedSort, setSelectedSort] = useState("Most used");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
-  const [copyingId, setCopyingId] = useState<string | null>(null);
+  const [selectedPost, setSelectedPost] = useState<typeof mockPosts[0] | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setIsAuthModalOpen(true);
+  };
+
+  const handleCardClick = (post: typeof mockPosts[0]) => {
+    setSelectedPost(post);
+    setIsDetailOpen(true);
   };
 
   const toggleTask = (task: string) => {
@@ -158,11 +163,6 @@ export function Feed() {
     setSelectedModels((prev) => prev.filter((m) => m !== model));
   };
 
-  const handleCopy = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopyingId(id);
-    setTimeout(() => setCopyingId(null), 2000);
-  };
 
   const filteredPosts = useMemo(() => {
     return mockPosts.filter((post) => {
@@ -328,28 +328,10 @@ export function Feed() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 whileHover={{ y: -8 }}
-                className="group relative"
+                className="group relative cursor-pointer"
+                onClick={() => handleCardClick(post)}
               >
-                <div className="relative">
-                  <PostCard post={post} />
-                  {/* Copy Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-[2px] rounded-lg">
-                    <button 
-                      onClick={() => handleCopy(post.id, post.prompt)}
-                      className="bg-green-500 hover:bg-green-400 text-white font-black px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl transition-all active:scale-95"
-                    >
-                      {copyingId === post.id ? (
-                        <>
-                          <Check className="w-4 h-4" /> COPIED
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" /> COPY PROMPT
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <PostCard post={post} />
               </motion.div>
             ))}
           </AnimatePresence>
@@ -385,6 +367,23 @@ export function Feed() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authMode}
+      />
+
+      <PromptDetail
+        prompt={selectedPost ? {
+          ...selectedPost,
+          author: selectedPost.creator?.name || "Anonymous",
+          avatar: selectedPost.creator?.avatar,
+          description: selectedPost.prompt,
+          snippet: selectedPost.outputPreview || selectedPost.prompt.substring(0, 100) + "...",
+          rating: selectedPost.rating || 4.5,
+          category: selectedPost.category || "General",
+        } : null}
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedPost(null);
+        }}
       />
     </div>
   );

@@ -1,6 +1,4 @@
-import { cn } from "@/lib/utils";
-import { Check, Copy, Star, Tag, User } from "lucide-react";
-import { useState } from "react";
+import { Star, Tag, User } from "lucide-react";
 
 type Post = {
   id: string;
@@ -24,24 +22,9 @@ type PostCardProps = {
 };
 
 export function PostCard({ post }: PostCardProps) {
-  const [copied, setCopied] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    await navigator.clipboard.writeText(post.prompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div
       className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden hover:border-[#62FE7A]/50 transition-all cursor-pointer"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => {
-        window.location.hash = `#/post/${post.id}`;
-      }}
     >
       {/* Image with title overlay at bottom */}
       <div className="relative aspect-square overflow-hidden bg-black/20">
@@ -58,35 +41,6 @@ export function PostCard({ post }: PostCardProps) {
           </h3>
         </div>
 
-        {/* Copy button overlay on hover */}
-        <div
-          className={cn(
-            "absolute inset-0 bg-black/70 flex items-center justify-center transition-opacity",
-            isHovered ? "opacity-100" : "opacity-0"
-          )}
-        >
-          <button
-            onClick={handleCopy}
-            className={cn(
-              "px-6 py-3 rounded-lg font-bold text-lg transition-all transform",
-              copied
-                ? "bg-green-500 text-white scale-110"
-                : "bg-[#62FE7A] text-black hover:bg-[#52EE6A] hover:scale-105"
-            )}
-          >
-            {copied ? (
-              <span className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                Copied!
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Copy className="w-5 h-5" />
-                Copy Prompt
-              </span>
-            )}
-          </button>
-        </div>
       </div>
 
       {/* Content below image */}
