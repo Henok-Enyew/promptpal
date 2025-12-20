@@ -156,7 +156,7 @@ export function Feed() {
   return (
     <div className="min-h-screen bg-[#030303]">
       {/* Navigation */}
-      <Navigation />
+      <Navigation alwaysOpaque />
 
       {/* Feed Content */}
       <main className="container mx-auto px-6 md:px-8 lg:px-12 py-8">

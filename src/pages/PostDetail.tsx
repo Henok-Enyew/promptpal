@@ -26,7 +26,7 @@ export function PostDetail() {
   return (
     <div className="min-h-screen bg-[#030303]">
       {/* Navigation */}
-      <Navigation />
+      <Navigation alwaysOpaque />
 
       {/* Content */}
       <main className="container mx-auto px-6 md:px-16 lg:px-24 xl:px-32 py-8">

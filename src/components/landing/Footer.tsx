@@ -1,5 +1,7 @@
 import React from 'react';
-import { Rocket, Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import logoFull from "@/assets/logo-full.png";
+import logo from "@/assets/logo.png";
 
 export const Footer: React.FC = () => {
   return (
@@ -8,10 +10,14 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-20">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center">
-                <Rocket className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-bold tracking-tighter">PromptPal</span>
+              <a href="#/" className="flex items-center">
+                <img src={logo} alt="PromptPal" className="w-10 md:hidden" />
+                <img
+                  src={logoFull}
+                  alt="PromptPal"
+                  className="w-32 hidden md:block"
+                />
+              </a>
             </div>
             <p className="text-white/40 max-w-sm mb-8 leading-relaxed font-light">
               Empowering the next generation of AI engineers with the tools to build, refine, and monetize high-performance instructions.
@@ -45,7 +51,6 @@ export const Footer: React.FC = () => {
               <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Prompt Engineering 101</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Model Comparison</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">API Keys Guide</a></li>
             </ul>
           </div>
 

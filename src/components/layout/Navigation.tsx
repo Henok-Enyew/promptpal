@@ -7,18 +7,23 @@ import { cn } from "@/lib/utils";
 
 type NavigationProps = {
   onOpenAuth?: (mode: 'login' | 'signup') => void;
+  alwaysOpaque?: boolean; // If true, always show background (for non-homepage pages)
 };
 
-export function Navigation({ onOpenAuth }: NavigationProps) {
+export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
   useEffect(() => {
+    if (alwaysOpaque) {
+      setIsScrolled(true);
+      return;
+    }
     return scrollY.on('change', (latest) => {
       setIsScrolled(latest > 50);
     });
-  }, [scrollY]);
+  }, [scrollY, alwaysOpaque]);
 
   const openMenuHandler = () => {
     setIsMenuOpen(true);
