@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Star, ShoppingCart, Eye } from 'lucide-react';
+import { Heart, Star, ShoppingCart } from 'lucide-react';
 
 const featuredPrompts = [
   {

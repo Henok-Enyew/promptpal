@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  Code2, 
   Terminal, 
-  Cpu, 
-  Settings2, 
   Play, 
   Save, 
   Share2, 
@@ -12,7 +9,6 @@ import {
   Plus, 
   Sparkles,
   Command,
-  Layout,
   Layers,
   Activity,
   Zap
@@ -35,14 +31,8 @@ const models: Model[] = [
 
 export const PromptStudio: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'editor' | 'testing' | 'benchmarks'>('editor');
-  const [selectedModels, setSelectedModels] = useState<string[]>(['gpt4o', 'claude35']);
+  const [selectedModels] = useState<string[]>(['gpt4o', 'claude35']);
   const [promptText, setPromptText] = useState("Act as a [ROLE]. Generate a technical report on [TOPIC] for a [AUDIENCE] audience.\n\nCONSTRAINTS:\n- No fluff\n- Markdown table included\n- Tone: Professional");
-  
-  const toggleModel = (id: string) => {
-    setSelectedModels(prev => 
-      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
-    );
-  };
 
   return (
     <div className="py-24 bg-[#030303] relative border-y border-white/5 overflow-hidden">

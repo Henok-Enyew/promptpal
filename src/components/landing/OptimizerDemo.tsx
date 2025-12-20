@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Copy, RefreshCw, Check, ArrowRight } from 'lucide-react';
+import { Sparkles, Copy, RefreshCw, Check } from 'lucide-react';
 
 export const OptimizerDemo: React.FC = () => {
   const [input, setInput] = useState("");

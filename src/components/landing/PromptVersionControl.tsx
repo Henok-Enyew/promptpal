@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GitBranch, GitCommit, GitMerge, Clock, User, Check, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { GitBranch, GitCommit, GitMerge, Clock, Check, X } from 'lucide-react';
 
 export const PromptVersionControl: React.FC = () => {
   return (
