@@ -14,7 +14,6 @@ import {
   Lock,
   ExternalLink
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 type Prompt = {
   id: string;
@@ -66,8 +65,6 @@ export const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, isOpen, onCl
   const authorAvatar = prompt.avatar || prompt.creator?.avatar || "https://i.pravatar.cc/150?u=anonymous";
   const category = prompt.category || prompt.tags[0] || "General";
   const rating = prompt.rating || 4.5;
-  const description = prompt.description || prompt.prompt;
-  const snippet = prompt.snippet || prompt.outputPreview || prompt.prompt.substring(0, 100) + "...";
   
   const mockOutputs = prompt.outputs || [
     { type: 'text', content: prompt.outputPreview || "Based on your request, I've analyzed the data. Here is the breakdown..." },
