@@ -164,3 +164,20 @@ export const promptsAPI = {
   },
 };
 
+// User API
+export const userAPI = {
+  getUserProfile: async () => {
+    const response = await api.get('/user/userProfile');
+    return response.data;
+  },
+
+  updateProfile: async (data: {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+  }) => {
+    const response = await api.patch('/user/updateProfile', data);
+    return response.data;
+  },
+};
+

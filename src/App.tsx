@@ -4,6 +4,7 @@ import { Feed } from "@/pages/Feed";
 import { PostDetail } from "@/pages/PostDetail";
 import { PromptStudioPage } from "@/pages/PromptStudio";
 import { DashboardPage } from "@/pages/Dashboard";
+import { VerifyEmailPage } from "@/pages/VerifyEmail";
 import { Features } from "@/components/landing/Features";
 import { OptimizerDemo } from "@/components/landing/OptimizerDemo";
 import { MarketplacePreview } from "@/components/landing/MarketplacePreview";
@@ -25,8 +26,13 @@ function App() {
     setIsAuthModalOpen(true);
   };
 
-  // Simple routing based on URL hash
+  // Simple routing based on URL hash and pathname
   const getCurrentPage = () => {
+    // Check for verify-email page (regular path, not hash-based)
+    if (window.location.pathname === '/verify-email') {
+      return 'verify-email';
+    }
+    
     const hash = window.location.hash;
     if (hash === "#/feed") return "feed";
     if (hash.startsWith("#/post/")) return "post";
@@ -37,14 +43,25 @@ function App() {
 
   const [page, setPage] = useState(getCurrentPage());
 
-  // Listen for hash changes
+  // Listen for hash and pathname changes
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleRouteChange = () => {
       setPage(getCurrentPage());
     };
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    window.addEventListener("hashchange", handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange);
+    // Check on mount
+    handleRouteChange();
+    return () => {
+      window.removeEventListener("hashchange", handleRouteChange);
+      window.removeEventListener("popstate", handleRouteChange);
+    };
   }, []);
+
+  // Handle verify-email page (regular path, not hash-based)
+  if (page === "verify-email") {
+    return <VerifyEmailPage />;
+  }
 
   if (page === "feed") {
     return <Feed />;

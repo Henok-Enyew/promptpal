@@ -1,15 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutGrid, Heart, History, Settings, Plus, 
   MoreVertical, Edit3, Trash2, ExternalLink, ArrowUpRight, Zap,
-  Copy, Sparkles
+  Copy, Sparkles, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 type DashboardTab = 'prompts' | 'favorites' | 'story' | 'settings';
 
 export const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('prompts');
+  const { user, isLoading: profileLoading, updateProfile, isUpdating, updateError } = useUserProfile();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+  });
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize form data when user profile loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phoneNumber: user.phoneNumber || '',
+      });
+    }
+  }, [user]);
+
+  // Handle update errors
+  useEffect(() => {
+    if (updateError) {
+      const errorMessage = getUserFriendlyError(updateError);
+      setError(errorMessage);
+    } else {
+      setError(null);
+    }
+  }, [updateError]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSaveSuccess(false);
+
+    try {
+      await updateProfile({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber || undefined,
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      const errorMessage = getUserFriendlyError(err);
+      setError(errorMessage);
+    }
+  };
 
   const sidebarItems = [
     { id: 'prompts', name: 'My Prompts', icon: <LayoutGrid className="w-4 h-4" /> },
@@ -97,26 +154,112 @@ export const Dashboard: React.FC = () => {
             )}
             {activeTab === 'settings' && (
               <div className="col-span-full max-w-2xl space-y-8">
-                <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5">
-                  <h3 className="text-lg font-bold mb-6">Profile Information</h3>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-white/20 tracking-widest">Full Name</label>
-                        <input type="text" defaultValue="Jane Doe" className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm focus:border-indigo-500 outline-none transition-all" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-white/20 tracking-widest">Display Handle</label>
-                        <input type="text" defaultValue="@janedoe" className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm focus:border-indigo-500 outline-none transition-all" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-white/20 tracking-widest">Email Address</label>
-                      <input type="email" defaultValue="jane@example.com" className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm focus:border-indigo-500 outline-none transition-all" />
-                    </div>
-                    <button className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-500 transition-all">Save Changes</button>
+                {profileLoading ? (
+                  <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 text-center">
+                    <div className="text-white/40">Loading profile...</div>
                   </div>
-                </div>
+                ) : (
+                  <form onSubmit={handleSave} className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5">
+                    <h3 className="text-lg font-bold mb-6">Profile Information</h3>
+                    
+                    {error && (
+                      <div className="mb-6 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-sm">
+                        {error}
+                      </div>
+                    )}
+
+                    {saveSuccess && (
+                      <div className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm flex items-center gap-2">
+                        <Check className="w-4 h-4" />
+                        Profile updated successfully!
+                      </div>
+                    )}
+
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label htmlFor="firstName" className="text-[10px] font-black uppercase text-white/20 tracking-widest">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            id="firstName"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            required
+                            minLength={2}
+                            maxLength={50}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label htmlFor="lastName" className="text-[10px] font-black uppercase text-white/20 tracking-widest">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            required
+                            minLength={2}
+                            maxLength={50}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label htmlFor="phoneNumber" className="text-[10px] font-black uppercase text-white/20 tracking-widest">
+                          Phone Number (Optional)
+                        </label>
+                        <input
+                          type="tel"
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
+                          onChange={handleInputChange}
+                          pattern="^[0-9]{7,15}$"
+                          placeholder="7-15 digits only"
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                        />
+                        <p className="text-[10px] text-white/30">Enter phone number with 7-15 digits only (no special characters)</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-[10px] font-black uppercase text-white/20 tracking-widest">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={user?.email || ''}
+                          disabled
+                          className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3 px-4 text-sm text-white/40 cursor-not-allowed"
+                        />
+                        <p className="text-[10px] text-white/30">Email cannot be changed</p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isUpdating}
+                        className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                      >
+                        {isUpdating ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          'Save Changes'
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
           </div>
