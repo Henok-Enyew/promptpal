@@ -2,8 +2,9 @@ import logoFull from "@/assets/logo-full.png";
 import logo from "@/assets/logo.png";
 import { useState, useEffect } from "react";
 import { motion, useScroll } from "framer-motion";
-import { LayoutGrid, Zap, BookOpen, DollarSign, User } from "lucide-react";
+import { LayoutGrid, Zap, BookOpen, DollarSign, User, LogOut, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 type NavigationProps = {
   onOpenAuth?: (mode: 'login' | 'signup') => void;
@@ -13,7 +14,9 @@ type NavigationProps = {
 export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { scrollY } = useScroll();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
     if (alwaysOpaque) {
@@ -24,6 +27,21 @@ export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps
       setIsScrolled(latest > 50);
     });
   }, [scrollY, alwaysOpaque]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen]);
 
   const openMenuHandler = () => {
     setIsMenuOpen(true);
@@ -37,9 +55,18 @@ export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps
     { name: 'Feed', href: '#/feed', icon: <LayoutGrid className="w-4 h-4" /> },
     { name: 'Marketplace', href: '#marketplace', icon: <DollarSign className="w-4 h-4" /> },
     { name: 'Prompt Studio', href: '#/studio', icon: <Zap className="w-4 h-4" /> },
-    { name: 'Dashboard', href: '#/dashboard', icon: <User className="w-4 h-4" /> },
     { name: 'Docs', href: '#', icon: <BookOpen className="w-4 h-4" /> },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsUserMenuOpen(false);
+      window.location.hash = '#/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <>
@@ -77,7 +104,50 @@ export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps
           </div>
 
           <div className="flex items-center gap-4">
-            {onOpenAuth ? (
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+            ) : isAuthenticated && user ? (
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3 p-1 pr-3 rounded-full bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] transition-all"
+                >
+                  {user.profileImage ? (
+                    <img
+                      src={user.profileImage}
+                      alt={user.fullName || user.firstName}
+                      className="w-8 h-8 rounded-full border border-white/10"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center font-bold text-xs text-white">
+                      {user.firstName?.[0] || user.email?.[0] || 'U'}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-white/80 hidden sm:block">
+                    {user.firstName || user.email?.split('@')[0] || 'User'}
+                  </span>
+                  <ChevronDown className={cn("w-3 h-3 text-white/40 transition-transform", isUserMenuOpen && "rotate-180")} />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0a] border border-white/10 rounded-2xl p-2 shadow-2xl backdrop-blur-xl z-50">
+                    <a
+                      href="#/dashboard"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                      <User className="w-4 h-4" /> Dashboard
+                    </a>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-rose-400 hover:bg-rose-400/10 transition-all"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : onOpenAuth ? (
               <>
                 <button 
                   onClick={() => onOpenAuth('login')}

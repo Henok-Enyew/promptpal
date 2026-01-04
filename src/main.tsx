@@ -1,8 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import App from './App.tsx'
+
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '57055867334-kcv2pbq4lqnddtm5gvnvmp50gflvgbi7.apps.googleusercontent.com'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -17,8 +21,10 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   </StrictMode>,
 )

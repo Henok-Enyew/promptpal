@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Chrome } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { authAPI } from '@/lib/api';
+import { parseBackendError, getUserFriendlyError } from '@/lib/errorHandler';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -21,8 +25,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     phoneNumber: '',
   });
   const [error, setError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const queryClient = useQueryClient();
   
   const { login, register, isLoggingIn, isRegistering, loginError, registerError } = useAuth();
+
+  // Google OAuth login
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      setIsGoogleLoading(true);
+      setError(null);
+      try {
+        // Send the authorization code to backend
+        const response = await authAPI.googleAuth(codeResponse.code);
+        if (response.status === 'success') {
+          // The backend sets the JWT cookie
+          // Invalidate auth query to refresh user state
+          queryClient.invalidateQueries({ queryKey: ['auth'] });
+          onSuccess?.();
+          onClose();
+        }
+      } catch (err: any) {
+        const errorMessage = getUserFriendlyError(err);
+        setError(errorMessage || 'Google authentication failed. Please try again.');
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Google authentication failed. Please try again.');
+      setIsGoogleLoading(false);
+    },
+    flow: 'auth-code', // Use authorization code flow
+  });
   
   useEffect(() => {
     setMode(initialMode);
@@ -39,9 +74,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
   useEffect(() => {
     if (loginError) {
-      setError(loginError instanceof Error ? loginError.message : 'Login failed. Please try again.');
+      const errorMessage = getUserFriendlyError(loginError);
+      setError(errorMessage);
     } else if (registerError) {
-      setError(registerError instanceof Error ? registerError.message : 'Registration failed. Please try again.');
+      const errorMessage = getUserFriendlyError(registerError);
+      setError(errorMessage);
     }
   }, [loginError, registerError]);
 
@@ -80,7 +117,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         });
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'An error occurred';
+      const errorMessage = getUserFriendlyError(err);
       setError(errorMessage);
     }
   };
@@ -132,9 +169,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
           </div>
 
           <div className="space-y-4 mb-8">
-            <button className="w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-3 px-4 rounded-2xl hover:bg-white/90 transition-all">
+            <button 
+              onClick={() => googleLogin()}
+              disabled={isGoogleLoading || isLoggingIn || isRegistering}
+              className="w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-3 px-4 rounded-2xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
               <Chrome className="w-5 h-5" />
-              Continue with Google
+              {isGoogleLoading ? 'Connecting...' : 'Continue with Google'}
             </button>
           </div>
 
@@ -155,7 +196,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {mode === 'signup' && (
-              <>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
                   <input 
@@ -165,6 +206,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                     value={formData.firstName}
                     onChange={handleChange}
                     required
+                    autoComplete="given-name"
                     className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
                   />
                 </div>
@@ -177,10 +219,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                     value={formData.lastName}
                     onChange={handleChange}
                     required
+                    autoComplete="family-name"
                     className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
                   />
                 </div>
-              </>
+              </div>
             )}
             
             <div className="relative">
@@ -192,33 +235,53 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
-              />
-            </div>
-
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-              <input 
-                type="password" 
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
+                autoComplete="email"
                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
 
             {mode === 'signup' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                  <input 
+                    type="password" 
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    autoComplete="new-password"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                  <input 
+                    type="password" 
+                    name="passwordConfirm"
+                    placeholder="Confirm Password"
+                    value={formData.passwordConfirm}
+                    onChange={handleChange}
+                    required
+                    autoComplete="new-password"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            {mode === 'login' && (
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
                 <input 
                   type="password" 
-                  name="passwordConfirm"
-                  placeholder="Confirm Password"
-                  value={formData.passwordConfirm}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
                   onChange={handleChange}
                   required
+                  autoComplete="current-password"
                   className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
                 />
               </div>

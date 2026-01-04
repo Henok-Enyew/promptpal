@@ -54,12 +54,12 @@ export const authAPI = {
   },
 
   logout: async () => {
-    const response = await api.post('/auth/logout');
+    const response = await api.get('/auth/logout');
     return response.data;
   },
 
   checkAuth: async () => {
-    const response = await api.get('/auth/check-auth');
+    const response = await api.get('/auth/me');
     return response.data;
   },
 
@@ -70,6 +70,11 @@ export const authAPI = {
 
   forgotPassword: async (email: string) => {
     const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  googleAuth: async (code: string) => {
+    const response = await api.post('/auth/google', { code });
     return response.data;
   },
 };
