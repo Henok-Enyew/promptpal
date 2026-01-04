@@ -3,6 +3,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import { Feed } from "@/pages/Feed";
 import { PostDetail } from "@/pages/PostDetail";
 import { PromptStudioPage } from "@/pages/PromptStudio";
+import { DashboardPage } from "@/pages/Dashboard";
 import { Features } from "@/components/landing/Features";
 import { OptimizerDemo } from "@/components/landing/OptimizerDemo";
 import { MarketplacePreview } from "@/components/landing/MarketplacePreview";
@@ -30,6 +31,7 @@ function App() {
     if (hash === "#/feed") return "feed";
     if (hash.startsWith("#/post/")) return "post";
     if (hash === "#/studio" || hash === "#studio") return "studio";
+    if (hash === "#/dashboard") return "dashboard";
     return "home"; // Default to home page with hero
   };
 
@@ -54,6 +56,10 @@ function App() {
 
   if (page === "studio") {
     return <PromptStudioPage />;
+  }
+
+  if (page === "dashboard") {
+    return <DashboardPage />;
   }
 
   return (

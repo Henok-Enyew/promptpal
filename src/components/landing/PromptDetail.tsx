@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
@@ -12,8 +12,13 @@ import {
   Settings, 
   ArrowLeft,
   Lock,
-  ExternalLink
+  ExternalLink,
+  MessageSquare,
+  Send,
+  Trash2
 } from 'lucide-react';
+import { useComments } from '@/hooks/useComments';
+import { useAuth } from '@/hooks/useAuth';
 
 type Prompt = {
   id: string;
@@ -49,12 +54,39 @@ type PromptDetailProps = {
 
 export const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, isOpen, onClose }) => {
   const [copied, setCopied] = React.useState(false);
+  const [commentText, setCommentText] = useState('');
+  const { isAuthenticated } = useAuth();
+  const { comments, isLoading: commentsLoading, addComment, isAddingComment } = useComments(prompt?.id || null);
 
   const handleCopy = () => {
     if (!prompt) return;
     navigator.clipboard.writeText(prompt.fullPrompt || prompt.prompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !prompt?.id) return;
+    
+    try {
+      await addComment(commentText.trim());
+      setCommentText('');
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString();
   };
 
   if (!prompt) return null;
@@ -255,6 +287,87 @@ export const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, isOpen, onCl
                     <button className="w-full flex items-center justify-center gap-3 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-xl shadow-indigo-500/20">
                       <ExternalLink className="w-5 h-5" /> Open in Studio
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="px-10 py-12 border-t border-white/5">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center gap-3 mb-8">
+                    <MessageSquare className="w-6 h-6 text-indigo-500" />
+                    <h2 className="text-2xl font-bold text-white">Comments</h2>
+                    <span className="text-white/40 text-sm">({comments.length})</span>
+                  </div>
+
+                  {/* Add Comment Form */}
+                  {isAuthenticated ? (
+                    <form onSubmit={handleAddComment} className="mb-8">
+                      <div className="flex gap-3">
+                        <textarea
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          placeholder="Add a comment..."
+                          rows={3}
+                          className="flex-1 bg-white/[0.03] border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500 transition-all resize-none"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!commentText.trim() || isAddingComment}
+                          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-all flex items-center gap-2 self-start"
+                        >
+                          <Send className="w-4 h-4" />
+                          {isAddingComment ? 'Posting...' : 'Post'}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="mb-8 p-6 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
+                      <p className="text-white/40 mb-4">Please log in to add a comment</p>
+                      <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all">
+                        Log In
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Comments List */}
+                  <div className="space-y-4">
+                    {commentsLoading ? (
+                      <div className="text-center py-8 text-white/40">Loading comments...</div>
+                    ) : comments.length === 0 ? (
+                      <div className="text-center py-8 text-white/40">No comments yet. Be the first to comment!</div>
+                    ) : (
+                      comments.map((comment: any) => (
+                        <motion.div
+                          key={comment.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.03] transition-all"
+                        >
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={comment.author.avatar}
+                              alt={comment.author.name}
+                              className="w-10 h-10 rounded-full border border-white/10"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <p className="font-bold text-white">{comment.author.name}</p>
+                                  <p className="text-xs text-white/40">{formatDate(comment.createdAt)}</p>
+                                </div>
+                                {isAuthenticated && comment.author.name === 'You' && (
+                                  <button className="p-2 rounded-lg hover:bg-rose-500/10 text-rose-400 transition-all">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-white/80 leading-relaxed">{comment.text}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

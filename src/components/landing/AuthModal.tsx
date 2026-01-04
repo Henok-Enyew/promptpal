@@ -1,19 +1,96 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Chrome } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
   initialMode: 'login' | 'signup';
+  onSuccess?: () => void;
 };
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode, onSuccess }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    phoneNumber: '',
+  });
+  const [error, setError] = useState<string | null>(null);
+  
+  const { login, register, isLoggingIn, isRegistering, loginError, registerError } = useAuth();
   
   useEffect(() => {
     setMode(initialMode);
-  }, [initialMode]);
+    setError(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      passwordConfirm: '',
+      phoneNumber: '',
+    });
+  }, [initialMode, isOpen]);
+
+  useEffect(() => {
+    if (loginError) {
+      setError(loginError instanceof Error ? loginError.message : 'Login failed. Please try again.');
+    } else if (registerError) {
+      setError(registerError instanceof Error ? registerError.message : 'Registration failed. Please try again.');
+    }
+  }, [loginError, registerError]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      if (mode === 'login') {
+        await login({
+          email: formData.email,
+          password: formData.password,
+        });
+        onSuccess?.();
+        onClose();
+      } else {
+        await register({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          passwordConfirm: formData.passwordConfirm,
+          phoneNumber: formData.phoneNumber || undefined,
+        });
+        // Show success message for registration
+        setError(null);
+        // Switch to login mode after successful registration
+        setMode('login');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: formData.email, // Keep email for convenience
+          password: '',
+          passwordConfirm: '',
+          phoneNumber: '',
+        });
+      }
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'An error occurred';
+      setError(errorMessage);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   if (!isOpen) return null;
 
@@ -70,23 +147,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
             </div>
           </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          {error && (
+            <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {mode === 'signup' && (
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-                <input 
-                  type="text" 
-                  placeholder="Full Name"
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
-                />
-              </div>
+              <>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                  <input 
+                    type="text" 
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                  <input 
+                    type="text" 
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+              </>
             )}
             
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
               <input 
                 type="email" 
+                name="email"
                 placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                required
                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
@@ -95,13 +200,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
               <input 
                 type="password" 
+                name="password"
                 placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
 
-            <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-indigo-500/20 mt-4">
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            {mode === 'signup' && (
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                <input 
+                  type="password" 
+                  name="passwordConfirm"
+                  placeholder="Confirm Password"
+                  value={formData.passwordConfirm}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                />
+              </div>
+            )}
+
+            <button 
+              type="submit"
+              disabled={isLoggingIn || isRegistering}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-indigo-500/20 mt-4"
+            >
+              {isLoggingIn || isRegistering 
+                ? 'Processing...' 
+                : mode === 'login' 
+                  ? 'Sign In' 
+                  : 'Create Account'}
             </button>
           </form>
 

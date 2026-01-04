@@ -29,6 +29,7 @@ const mockPosts = [
     rating: 4.8,
     outputPreview: "A stunning cyberpunk feline with glowing neon accents...",
     category: "Image",
+    stats: { likes: 1240, comments: 82, shares: 12, views: 5600 },
   },
   {
     id: "2",
@@ -45,6 +46,8 @@ const mockPosts = [
     testCount: 15,
     outputPreview: "const Dashboard: React.FC = () => { ... }",
     category: "Coding",
+    rating: 4.7,
+    stats: { likes: 950, comments: 56, shares: 18, views: 3200 },
   },
   {
     id: "3",
@@ -60,6 +63,8 @@ const mockPosts = [
     rating: 4.6,
     outputPreview: "Transform your workflow with our revolutionary SaaS platform...",
     category: "Marketing",
+    isPremium: true,
+    stats: { likes: 850, comments: 45, shares: 8, views: 2300 },
   },
   {
     id: "4",
@@ -75,6 +80,8 @@ const mockPosts = [
     successRate: 84,
     testCount: 25,
     category: "Design",
+    rating: 4.5,
+    stats: { likes: 720, comments: 38, shares: 15, views: 1900 },
   },
   {
     id: "5",
@@ -90,6 +97,7 @@ const mockPosts = [
     rating: 4.9,
     outputPreview: "Sales increased 23% QoQ with strongest growth in...",
     category: "Business",
+    stats: { likes: 2100, comments: 120, shares: 34, views: 8900 },
   },
   {
     id: "6",
@@ -105,6 +113,8 @@ const mockPosts = [
     successRate: 88,
     testCount: 12,
     category: "Marketing",
+    rating: 4.4,
+    stats: { likes: 680, comments: 32, shares: 9, views: 1500 },
   },
 ];
 

@@ -2,7 +2,7 @@ import logoFull from "@/assets/logo-full.png";
 import logo from "@/assets/logo.png";
 import { useState, useEffect } from "react";
 import { motion, useScroll } from "framer-motion";
-import { LayoutGrid, Zap, BookOpen, DollarSign } from "lucide-react";
+import { LayoutGrid, Zap, BookOpen, DollarSign, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavigationProps = {
@@ -37,6 +37,7 @@ export function Navigation({ onOpenAuth, alwaysOpaque = false }: NavigationProps
     { name: 'Feed', href: '#/feed', icon: <LayoutGrid className="w-4 h-4" /> },
     { name: 'Marketplace', href: '#marketplace', icon: <DollarSign className="w-4 h-4" /> },
     { name: 'Prompt Studio', href: '#/studio', icon: <Zap className="w-4 h-4" /> },
+    { name: 'Dashboard', href: '#/dashboard', icon: <User className="w-4 h-4" /> },
     { name: 'Docs', href: '#', icon: <BookOpen className="w-4 h-4" /> },
   ];
 
