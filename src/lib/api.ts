@@ -81,9 +81,9 @@ export const authAPI = {
 
 // Comments API (mock for now, ready for backend integration)
 export const commentsAPI = {
-  getComments: async (promptId: string) => {
+  getComments: async (_promptId: string) => {
     // TODO: Replace with actual endpoint when backend is ready
-    // const response = await api.get(`/prompts/${promptId}/comments`);
+    // const response = await api.get(`/prompts/${_promptId}/comments`);
     // return response.data;
     
     // Mock data for now
@@ -114,9 +114,9 @@ export const commentsAPI = {
     };
   },
 
-  addComment: async (promptId: string, text: string) => {
+  addComment: async (_promptId: string, text: string) => {
     // TODO: Replace with actual endpoint when backend is ready
-    // const response = await api.post(`/prompts/${promptId}/comments`, { text });
+    // const response = await api.post(`/prompts/${_promptId}/comments`, { text });
     // return response.data;
     
     // Mock response for now
@@ -136,9 +136,9 @@ export const commentsAPI = {
     };
   },
 
-  deleteComment: async (commentId: string) => {
+  deleteComment: async (_commentId: string) => {
     // TODO: Replace with actual endpoint when backend is ready
-    // const response = await api.delete(`/comments/${commentId}`);
+    // const response = await api.delete(`/comments/${_commentId}`);
     // return response.data;
     
     return { status: 'success' };

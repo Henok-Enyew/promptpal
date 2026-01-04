@@ -106,7 +106,7 @@ class WebSocketClient {
 export const wsClient = new WebSocketClient();
 
 // Helper hook for React components (to be used when needed)
-export const useWebSocket = (url: string | null, events: WebSocketEvent[]) => {
+export const useWebSocket = (url: string | null, _events: WebSocketEvent[]) => {
   // This can be implemented as a React hook when needed
   // For now, it's ready for integration
   return {

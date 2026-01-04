@@ -5,7 +5,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { authAPI } from '@/lib/api';
-import { parseBackendError, getUserFriendlyError } from '@/lib/errorHandler';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 type AuthModalProps = {
   isOpen: boolean;
